@@ -77,7 +77,9 @@ def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
 
     webbrowser.open(url)
 
-def start_axon_jupyter_notebook(project_name='low-rank-dims'):
+def start_axon_jupyter_notebook(project_name='low-rank-dims',
+                                time_in_hours=3,
+                                mem_in_gb=16):
     """Similar deal as above but simpler, using Axon's sjupyter command,
     which handles the timing of waiting for the job internally. No
     customizable options for memory / time demands of the notebook, though."""
@@ -93,7 +95,9 @@ def start_axon_jupyter_notebook(project_name='low-rank-dims'):
                          '&&',
                          'cd {}'.format(notebook_dir),
                          '&&',
-                         'sjupyter'], capture_output=True)
+                         'sjupyter',
+                         '--time={}:00:00'.format(time_in_hours),
+                         '--mem-per-cpu={}gb'.format(mem_in_gb)], capture_output=True)
     address = str(sp.stdout).split('http://')[1].split('/?token=')
     ip, port = address[0].split(':')
     token = address[1].split('\\n[I')[0]

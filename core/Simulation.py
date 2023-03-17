@@ -11,7 +11,7 @@ class Simulation:
         self.rnn = rnn
 
     def run(self, T, ode_method, x_init, monitors=[], I_ext=None,
-            verbose=True):
+            verbose=True, T_monitor=None):
         """Run the simulation for a specific time interval and external inputs.
 
         Args:
@@ -27,7 +27,9 @@ class Simulation:
             I_ext (numpy array or None): External currents for each time step.
                 Discretization must much that of ode_method.
             verbose (boolean): Flag indicating whether to print progress reports
-                or not. """
+                or not.
+            T_monitor (float or None): Time after which the simulation starts
+                tracking internal data via monitors."""
 
         # Store core attributes
         self.T = T
@@ -39,6 +41,7 @@ class Simulation:
         self.total_time_steps = len(self.time_vector)
         self.report_interval = max(self.total_time_steps // 10, 1)
         self.verbose = verbose
+        self.T_monitor = T_monitor
 
         # Initialize monitors
         self.mons = {k: [] for k in monitors}
@@ -61,8 +64,15 @@ class Simulation:
             self.rnn.x = self.ode_method.next_state(self.rnn.x, self.rnn.x_dot(I=I))
 
             # Update monitors
-            self.update_monitors()
-            self.get_radii_and_norms()
+            if self.T_monitor is None:
+                self.update_monitors()
+                self.get_radii_and_norms()
+            else:
+                if t > self.T_monitor:
+                    self.update_monitors()
+                    self.get_radii_and_norms()
+                else:
+                    pass
 
             # Make report if conditions are met
             if (self.i_t % self.report_interval == 0 and

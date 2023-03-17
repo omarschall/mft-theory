@@ -22,7 +22,8 @@ class Time_Cts_RNN:
         state and an external input, if provided. Also updates
         the internal value of eta."""
 
-        self.eta = self.W.dot(self.activation.f(self.x))
+        self.phi = self.activation.f(self.x)
+        self.eta = self.g * self.W.dot(self.phi)
         ret = -self.x + self.eta
         if I is not None:
             self.I = I

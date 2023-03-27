@@ -68,19 +68,24 @@ def solve_for_Delta_0(g, Delta_0_init=2, max_iters=1000):
 
     return Delta_0
 
-def phi_autocorrelation(Delta, Delta_0):
+def phi_autocorrelation(Delta, Delta_0, dz=0.01):
     """Numerical answer to Eq. 2.8 in Mastrogiuseppe thesis, for a given value
     of Delta and Delta_0."""
 
-    def inner_integral(z):
+    x = np.arange(-4, 4, dz)
+    z = np.arange(-4, 4, dz)
+    gauss_pdf_x = 1 / np.sqrt(2 * np.pi) * np.exp(-x**2/2)
+    gauss_pdf_z = 1 / np.sqrt(2 * np.pi) * np.exp(-z**2/2)
+    inner_integrand = np.tanh(np.add.outer(np.sqrt(Delta) * z,
+                              np.sqrt(Delta_0 - Delta) * x))
 
-        f = partial(phi_sqrt, Delta=Delta, Delta_0=Delta_0, z=z)
-        return np.square(gaussian_integral(f))
+    ret = np.square(np.sum(inner_integrand * gauss_pdf_x * dz, 1))
+    ret = np.sum(ret * gauss_pdf_z * dz)
 
-    return gaussian_integral(inner_integral)
+    return ret
 
 
-def solve_for_delta_T(g, Delta_0, T=1, dT=0.001):
+def solve_for_delta_T(g, Delta_0, T=10, dT=0.01, dz=0.01):
     """For a given value of Delta_0 corresponding to the stable MFT solution,
     find the trajectory of Delta_T values for arbitrary time separations.
 
@@ -104,7 +109,25 @@ def solve_for_delta_T(g, Delta_0, T=1, dT=0.001):
 
         Delta_T[i_t] = Delta_T[i_t-1] + dT * Delta_T_dot[i_t-1]
         Delta_T_dotdot = Delta_T[i_t] - g**2 * phi_autocorrelation(Delta_T[i_t],
-                                                                   Delta_0)
+                                                                   Delta_0,
+                                                                   dz=dz)
         Delta_T_dot[i_t] = Delta_T_dot[i_t-1] + dT * Delta_T_dotdot
 
-    return Delta_T
+    return time_vector, Delta_T, Delta_T_dot
+
+def Delta_potential(g, Delta, Delta_0, dz=0.01):
+    """Numerical answer to Eq. 2.11 in Mastrogiuseppe thesis, for a given value
+    of Delta and Delta_0."""
+
+    x = np.arange(-4, 4, dz)
+    z = np.arange(-4, 4, dz)
+    gauss_pdf_x = 1 / np.sqrt(2 * np.pi) * np.exp(-x**2/2)
+    gauss_pdf_z = 1 / np.sqrt(2 * np.pi) * np.exp(-z**2/2)
+    inner_integrand = np.log(np.cosh((np.add.outer(np.sqrt(Delta) * z,
+                                      np.sqrt(Delta_0 - Delta) * x))))
+
+    ret = np.square(np.sum(inner_integrand * gauss_pdf_x * dz, 1))
+    ret = np.sum(ret * gauss_pdf_z * dz)
+    ret = -Delta**2/2 + g**2 * ret
+
+    return ret

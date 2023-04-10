@@ -13,19 +13,28 @@ class Time_Cts_RNN:
         self.activation = activation
         self.g = g
 
-        self.n = self.W.shape[0]
-        self.x = np.zeros(self.n)
+        self.N = self.W.shape[0]
+        self.x = np.zeros(self.N)
         self.phi = self.activation.f(self.x)
 
-    def x_dot(self, I=None):
+    def x_dot(self, I=None, x=None):
         """Return time derivative in terms of current network
         state and an external input, if provided. Also updates
         the internal value of eta."""
 
-        self.phi = self.activation.f(self.x)
-        self.eta = self.g * self.W.dot(self.phi)
-        ret = -self.x + self.eta
-        if I is not None:
-            self.I = I
-            ret += self.I
-        return ret
+        if x is None:
+            self.phi = self.activation.f(self.x)
+            self.eta = self.g * self.W.dot(self.phi)
+            ret = -self.x + self.eta
+            if I is not None:
+                self.I = I
+                ret += self.I
+            return ret
+        else:
+            phi = self.activation.f(x)
+            eta = self.g * self.W.dot(phi)
+            ret = -x + eta
+            if I is not None:
+                self.I = I
+                ret += self.I
+            return ret

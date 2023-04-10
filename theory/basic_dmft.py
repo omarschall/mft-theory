@@ -39,7 +39,6 @@ def equation_2_14(Delta_0, g=1.2):
     return Delta_0**2 / 2 - g**2 * (gaussian_integral(squared_Phi_sqrt_)
                                     - gaussian_integral(Phi_sqrt_) ** 2)
 
-
 def equation_2_14_prime(Delta_0, g=1.2):
     """Derivative of Equation_2_14 wrt Delta_0, for using Newton's method to
     solve."""
@@ -70,22 +69,21 @@ def solve_for_Delta_0(g, Delta_0_init=2, max_iters=1000):
 
 def phi_autocorrelation(Delta, Delta_0, dz=0.01):
     """Numerical answer to Eq. 2.8 in Mastrogiuseppe thesis, for a given value
-    of Delta and Delta_0."""
+    of Delta and Delta_0. Uses Hermite polynomials."""
 
-    x = np.arange(-4, 4, dz)
-    z = np.arange(-4, 4, dz)
-    gauss_pdf_x = 1 / np.sqrt(2 * np.pi) * np.exp(-x**2/2)
-    gauss_pdf_z = 1 / np.sqrt(2 * np.pi) * np.exp(-z**2/2)
-    inner_integrand = np.tanh(np.add.outer(np.sqrt(Delta) * z,
-                              np.sqrt(Delta_0 - Delta) * x))
+    gaussian_norm = 1 / np.sqrt(np.pi)
+    gauss_points, gauss_weights = np.polynomial.hermite.hermgauss(200)
+    gauss_points = gauss_points * np.sqrt(2)
+    inner_integrand = np.tanh(np.add.outer(np.sqrt(Delta) * gauss_points,
+                              np.sqrt(Delta_0 - Delta) * gauss_points))
 
-    ret = np.square(np.sum(inner_integrand * gauss_pdf_x * dz, 1))
-    ret = np.sum(ret * gauss_pdf_z * dz)
+    ret = np.square(gaussian_norm * np.dot(inner_integrand, gauss_weights))
+    ret = gaussian_norm * np.dot(ret, gauss_weights)
 
     return ret
 
 
-def solve_for_delta_T(g, Delta_0, T=10, dT=0.01, dz=0.01):
+def solve_for_Delta_T(g, Delta_0, T=10, dT=0.01, dz=0.01):
     """For a given value of Delta_0 corresponding to the stable MFT solution,
     find the trajectory of Delta_T values for arbitrary time separations.
 
@@ -117,7 +115,9 @@ def solve_for_delta_T(g, Delta_0, T=10, dT=0.01, dz=0.01):
 
 def Delta_potential(g, Delta, Delta_0, dz=0.01):
     """Numerical answer to Eq. 2.11 in Mastrogiuseppe thesis, for a given value
-    of Delta and Delta_0."""
+    of Delta and Delta_0.
+
+    NEEDS CHANGING WITH HERMITE POLYNOMIALS."""
 
     x = np.arange(-4, 4, dz)
     z = np.arange(-4, 4, dz)

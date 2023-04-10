@@ -54,7 +54,11 @@ def submit_job(job_file_path, n_array,
                                                         n_array,
                                                         job_path)
     job_stdout = get_ipython().getoutput(sbatch_command)
-    job_id = int(job_stdout[0].split(' ')[-1])
+    try:
+        job_id = int(job_stdout[0].split(' ')[-1])
+    except ValueError:
+        print(job_stdout)
+        raise ValueError('Job failed')
 
     return job_id
 

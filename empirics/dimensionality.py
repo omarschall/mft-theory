@@ -29,21 +29,20 @@ def random_derangement(n):
                 return tuple(v)
 
 def compute_approximate_participation_coefficient(X, demean=True,
-                                                  n_derangments=10):
+                                                    n_derangments=10):
     """From a data matrix X, compute the PR by estimating off-diagonals of
     X. X must have shape (samples, features)."""
 
     if demean:
         X = X - X.mean(0)
 
-    pr = []
+    psi_00_estimates = []
+    avg_X_var_squared = np.square((X * X).sum() / (X.shape[0] - 1))
+    avg_X_squared_var = np.square((X * X).sum(0) / (X.shape[0] - 1)).sum()
     for i in range(n_derangments):
-        avg_X_var_squared = np.square((X * X).sum() / (X.shape[0] - 1))
-        avg_X_squared_var = np.square((X * X).sum(0) / (X.shape[0] - 1)).sum()
-
         shuffle_idx = random_derangement(X.shape[1])
-        psi_00_estimate = np.square((X * X[:, shuffle_idx]).sum(0) / (X.shape[0] - 1)).sum()
+        psi_00_estimates.append(np.square((X * X[:, shuffle_idx]).sum(0) / (X.shape[0] - 1)).sum())
+    psi_00 = np.mean(psi_00_estimates)
+    pr = avg_X_var_squared / (avg_X_squared_var + X.shape[1] * psi_00) / X.shape[1]
 
-        pr.append(avg_X_var_squared / (avg_X_squared_var + X.shape[1] * psi_00_estimate) / X.shape[1])
-
-    return np.mean(pr)
+    return pr

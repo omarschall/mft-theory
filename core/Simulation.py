@@ -11,7 +11,7 @@ class Simulation:
         self.rnn = rnn
 
     def run(self, T, ode_method, x_init, monitors=[], I_ext=None,
-            verbose=True, T_monitor=None):
+            verbose=True, T_monitor=None, T_monitor_interval=1):
         """Run the simulation for a specific time interval and external inputs.
 
         Args:
@@ -42,6 +42,7 @@ class Simulation:
         self.report_interval = max(self.total_time_steps // 10, 1)
         self.verbose = verbose
         self.T_monitor = T_monitor
+        self.T_monitor_interval = T_monitor_interval
 
         # Initialize monitors
         self.mons = {k: [] for k in monitors}
@@ -64,11 +65,11 @@ class Simulation:
             self.rnn.x = self.ode_method.next_state(self.rnn.x, self.rnn.x_dot(I=I))
 
             # Update monitors
-            if self.T_monitor is None:
+            if self.T_monitor is None and (i_t % self.T_monitor_interval)==0:
                 self.update_monitors()
                 self.get_radii_and_norms()
             else:
-                if t > self.T_monitor:
+                if t > self.T_monitor and (i_t % self.T_monitor_interval)==0:
                     self.update_monitors()
                     self.get_radii_and_norms()
                 else:

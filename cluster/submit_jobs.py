@@ -50,9 +50,9 @@ def submit_job(job_file_path, n_array,
         dependency_arg = '--dependency=afterok:{}'.format(id_dependency)
 
     ### -- Submit job --- ###
-    sbatch_command = 'sbatch {} --array=1-{} {}'.format(dependency_arg,
-                                                        n_array,
-                                                        job_path)
+    sbatch_command = 'sbatch {} --exclude=ax[01-04] --array=1-{} {}'.format(dependency_arg,
+                                                                                   n_array,
+                                                                                   job_path)
     job_stdout = get_ipython().getoutput(sbatch_command)
     try:
         job_id = int(job_stdout[0].split(' ')[-1])

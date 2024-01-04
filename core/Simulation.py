@@ -11,7 +11,8 @@ class Simulation:
         self.rnn = rnn
 
     def run(self, T, ode_method, x_init, monitors=[], I_ext=None,
-            verbose=True, T_monitor=None, T_monitor_interval=1):
+            verbose=True, T_monitor=None, T_monitor_interval=1,
+            compute_phi_lpf=False):
         """Run the simulation for a specific time interval and external inputs.
 
         Args:
@@ -29,7 +30,9 @@ class Simulation:
             verbose (boolean): Flag indicating whether to print progress reports
                 or not.
             T_monitor (float or None): Time after which the simulation starts
-                tracking internal data via monitors."""
+                tracking internal data via monitors.
+            compute_phi_lpf (boolean): Flag indicating whether to compute the
+                low-pass filtered version of phi or not."""
 
         # Store core attributes
         self.T = T
@@ -43,6 +46,8 @@ class Simulation:
         self.verbose = verbose
         self.T_monitor = T_monitor
         self.T_monitor_interval = T_monitor_interval
+        self.compute_phi_lpf = compute_phi_lpf
+        self.phi_lpf = 0
 
         # Initialize monitors
         self.mons = {k: [] for k in monitors}
@@ -63,6 +68,8 @@ class Simulation:
 
             # Update network state
             self.rnn.x = self.ode_method.next_state(self.rnn.x, self.rnn.x_dot(I=I))
+            if self.compute_phi_lpf:
+                self.phi_lpf = self.phi_lpf + self.ode_method.dt * (-self.phi_lpf + self.rnn.phi)
 
             # Update monitors
             if self.T_monitor is None and (i_t % self.T_monitor_interval)==0:

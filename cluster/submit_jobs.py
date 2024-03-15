@@ -7,7 +7,8 @@ def submit_job(job_file_path, n_array,
                id_dependency=None,
                project_name='low-rank-dims',
                results_subdir='misc',
-               module_name='mft-theory'):
+               module_name='mft-theory',
+               execute=False):
     """Submit an array job in reference to a particular job file, with a
     specified number of sub-jobs. Creates directories for storing results."""
 
@@ -50,23 +51,28 @@ def submit_job(job_file_path, n_array,
         dependency_arg = '--dependency=afterok:{}'.format(id_dependency)
 
     ### -- Submit job --- ###
-    sbatch_command = 'sbatch {} --exclude=ax[01-04] --array=1-{} {}'.format(dependency_arg,
+    sbatch_command = 'sbatch {} --exclude=ax[01-13],ax[17-19] --array=1-{} {}'.format(dependency_arg,
                                                                                    n_array,
                                                                                    job_path)
-    job_stdout = get_ipython().getoutput(sbatch_command)
-    try:
-        job_id = int(job_stdout[0].split(' ')[-1])
-    except ValueError:
-        print(job_stdout)
-        raise ValueError('Job failed')
 
-    return job_id
+    if execute:
+        job_stdout = get_ipython().getoutput(sbatch_command)
+        try:
+            job_id = int(job_stdout[0].split(' ')[-1])
+        except ValueError:
+            print(job_stdout)
+            raise ValueError('Job failed')
+
+        return job_id
+    else:
+        print(sbatch_command)
+        return None
 
 def write_job_file(job_name, py_file_name='main.py',
                    py_args='',
                    project_name='low-rank-dims',
                    results_subdir='misc',
-                   nodes=1, ppn=1, mem=16, n_hours=8):
+                   nodes=1, ppn=1, mem=16, n_hours=8,  n_gpus=0):
     """Create a job file for running a standard single-main-script job.
 
     Args:
@@ -113,8 +119,9 @@ def write_job_file(job_name, py_file_name='main.py',
                            + '--overlay {} {} '.format(overlay, singularity_path)
                            + 'bash -c "source /ext3/env.sh; {}"'.format(command))
     if username == 'om2382':
-        execute_command = ('ml load anaconda3-2019.03; '
-                           + 'conda activate v-rtrl; '
+        execute_command = ('ml load anaconda3-2023.07; '
+                           + 'conda activate torch-test-3; '
+                           + 'conda env list; '
                            + command)
 
     ### --- Write job file -- ###
@@ -126,6 +133,7 @@ def write_job_file(job_name, py_file_name='main.py',
             + '#SBATCH --nodes={}\n'.format(nodes)
             + '#SBATCH --ntasks-per-node=1\n'
             + '#SBATCH --cpus-per-task={}\n'.format(ppn)
+            + '#SBATCH --gres=gpu:{}\n'.format(n_gpus)
             + '#SBATCH --mem={}GB\n'.format(mem)
             + '#SBATCH --time={}:00:00\n'.format(n_hours)
             + '#SBATCH --job-name={}\n'.format(job_name[0:16])

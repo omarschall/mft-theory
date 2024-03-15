@@ -46,3 +46,41 @@ def compute_approximate_participation_coefficient(X, demean=True,
     pr = avg_X_var_squared / (avg_X_squared_var + X.shape[1] * psi_00) / X.shape[1]
 
     return pr
+
+import numpy as np
+
+def shared_component_variance_analysis(X, time_chunk_steps):
+    """
+    Help from Chat-GPT. Perform shared component variance analysis on the data matrix X.
+
+    Parameters:
+    - X: Data matrix of shape [time, units]
+    - time_chunk_steps: Size of the chunks to split time points
+
+    Returns:
+    - other stuff
+    """
+
+    # Split data into two groups
+    F = X[:, :X.shape[1] // 2]
+    G = X[:, X.shape[1] // 2:]
+
+    # Alternate chunks for training and testing
+    n_chunks = X.shape[0] // time_chunk_steps
+    train_indices = np.hstack([range(i * time_chunk_steps, (i + 1) * time_chunk_steps) for i in range(n_chunks) if i % 2 == 0])
+    test_indices = np.hstack([range(i * time_chunk_steps, (i + 1) * time_chunk_steps) for i in range(n_chunks) if i % 2 != 0])
+    F_train = F[train_indices]
+    G_train = G[train_indices]
+    F_test = F[test_indices]
+    G_test = G[test_indices]
+
+    # Compute the covariance matrix and its svd
+    C = F_train.T.dot(G_train) / (F_train.shape[0] - 1)
+    U, S, VT = np.linalg.svd(C)
+
+    reliable_var = np.sum(U.dot(F_test.T) * ((VT.T.dot(G_test.T))), axis=1)/(F_test.shape[0]-1)
+
+    return reliable_var
+
+
+

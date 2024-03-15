@@ -79,6 +79,7 @@ def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
 
 def start_axon_jupyter_notebook(project_name='low-rank-dims',
                                 time_in_hours=3,
+                                n_gpus=0,
                                 mem_in_gb=16):
     """Similar deal as above but simpler, using Axon's sjupyter command,
     which handles the timing of waiting for the job internally. No
@@ -89,15 +90,18 @@ def start_axon_jupyter_notebook(project_name='low-rank-dims',
     notebook_dir = os.path.join('/home/om2382', project_name, 'notebooks')
     remote = 'om2382@axon.rc.zi.columbia.edu'
     sp = subprocess.run(['ssh', remote,
-                         'ml load anaconda3-2019.03',
+                         'ml load anaconda3-2023.07',
                          '&&',
-                         'conda activate v-rtrl',
+                         'conda activate torch-test-3',
                          '&&',
                          'cd {}'.format(notebook_dir),
                          '&&',
+                         'export SJUPYTER_TIMEOUT=0',
+                         '&&',
                          'sjupyter',
                          '--time={}:00:00'.format(time_in_hours),
-                         '--mem-per-cpu={}gb'.format(mem_in_gb)], capture_output=True)
+                         '--mem-per-cpu={}gb'.format(mem_in_gb),
+                         '--gres=gpu:{}'.format(n_gpus)], capture_output=True)
     address = str(sp.stdout).split('http://')[1].split('/?token=')
     ip, port = address[0].split(':')
     token = address[1].split('\\n[I')[0]

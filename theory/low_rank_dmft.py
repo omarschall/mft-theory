@@ -31,6 +31,7 @@ def run_low_rank_dmft(g, s, T=10, dt=0.05, diag=True, sigma_nm=None, sigma_mm=No
     if sigma_mm is not None:
         U = s*sigma_mm
     Delta[0, 0] = 1.
+    kappa[0, :] = np.array([0.1, -0.1])
     idx = np.arange(Nt)
     for j in range(1, Nt):
         psi[j] = compute_psi(Delta[j-1,j-1])

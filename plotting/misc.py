@@ -1,6 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+def plot_2d_array_of_config_results_traces(configs_array, results_array, key_order):
+
+    n_x = len(configs_array[key_order[0]])
+    n_y = len(configs_array[key_order[1]])
+    fig, ax = plt.subplots(n_x, n_y, figsize=(n_y * 5, n_x * 5))
+    n_seeds = results_array.shape[2]
+    for i_x in range(n_x):
+        for i_y in range(n_y):
+            ax[i_x, i_y].plot(results_array[i_x, i_y])
+
 def plot_2d_array_of_config_results(configs_array, results_array, key_order,
                                     log_scale=False, tick_rounding=3, **imshow_kwargs):
     """Given an array of configs (must be 2D) and corresponding results as

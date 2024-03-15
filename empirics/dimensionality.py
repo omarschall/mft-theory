@@ -82,5 +82,18 @@ def shared_component_variance_analysis(X, time_chunk_steps):
 
     return reliable_var
 
+def compute_psi_tau(X, demean=True, n_derangements=10):
+    """Compute the psi_tau for a data matrix X. X must have shape (samples, features)."""
 
+    if demean:
+        X = X - X.mean(0)
 
+    psi_tau_estimates = []
+    for i in range(n_derangements):
+        shuffle_idx = random_derangement(X.shape[1])
+        fourier_X = np.fft.rfft(X, axis=0, norm='ortho')
+        fourier_cross_covs = np.conjugate(fourier_X) * fourier_X[:, shuffle_idx]
+        psi_tau = np.fft.irfft(fourier_cross_covs, axis=0)**2
+        psi_tau_estimates.append(psi_tau)
+
+    return np.mean(psi_tau_estimates)

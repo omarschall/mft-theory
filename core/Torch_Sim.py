@@ -2,9 +2,9 @@ import numpy as np
 import torch
 
 phi_torch = lambda x: torch.erf((np.sqrt(np.pi)/2)*x)
-def run_torch_sim(T_sim, T_eval, dt, W, N_batch=1):
+def run_torch_sim(T_sim, T_eval, dt, W, N_batch=1, T_save_delay=100):
     """Thanks to David Clark""""
-    
+
     device = W.device
     N = W.shape[0]
     eval_iter = int(T_eval / dt)
@@ -25,4 +25,7 @@ def run_torch_sim(T_sim, T_eval, dt, W, N_batch=1):
         if i % eval_iter == 0:
             x_save[i//eval_iter] = x
             r_lpf_save[i//eval_iter] = r_lpf
-    return x_save, r_lpf_save
+
+    x_ret = x_save[int(T_save_delay/dt_save):].cpu().detach().numpy().squeeze()
+    r_lpf_ret = r_lpf_save[int(T_save_delay/dt_save):].cpu().detach().numpy().squeeze()
+    return x_ret, r_lpf_ret

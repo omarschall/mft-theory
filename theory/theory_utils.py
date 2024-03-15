@@ -12,3 +12,21 @@ def gaussian_integral(f):
     integrand = f(z=gauss_points)
 
     return gaussian_norm * np.dot(integrand, gauss_weights)
+
+def fft(x, dt):
+    n_dim = len(x.shape)
+    rescaling = (dt / np.sqrt(2 * np.pi)) ** n_dim
+    if n_dim == 1:
+        return rescaling * np.fft.fft(x)
+    elif n_dim == 2:
+        return rescaling * np.fft.fft2(x)
+
+
+def ifft(x, dt):
+    n_dim = len(x.shape)
+    samp_freq = 1 / dt
+    rescaling = (samp_freq * np.sqrt(2 * np.pi)) ** n_dim
+    if n_dim == 1:
+        return rescaling * np.fft.ifft(x)
+    elif n_dim == 2:
+        return rescaling * np.fft.ifft2(x)

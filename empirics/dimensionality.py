@@ -49,38 +49,23 @@ def compute_approximate_participation_coefficient(X, demean=True,
 
 import numpy as np
 
-def shared_component_variance_analysis(X, time_chunk_steps):
-    """
-    Help from Chat-GPT. Perform shared component variance analysis on the data matrix X.
+def shared_variance_components_analsys(X):
+    """Do SVCA on an array X where we can split into test and train data points arbitrary (WLOG first and second halfs
+    for each.)"""
 
-    Parameters:
-    - X: Data matrix of shape [time, units]
-    - time_chunk_steps: Size of the chunks to split time points
+    T, N = X.shape
+    F_train, G_train = X[:T//2,:N//2], X[:T//2,N//2:]
+    F_test, G_test = X[T//2:,:N//2], X[T//2:,N//2:]
 
-    Returns:
-    - other stuff
-    """
-
-    # Split data into two groups
-    F = X[:, :X.shape[1] // 2]
-    G = X[:, X.shape[1] // 2:]
-
-    # Alternate chunks for training and testing
-    n_chunks = X.shape[0] // time_chunk_steps
-    train_indices = np.hstack([range(i * time_chunk_steps, (i + 1) * time_chunk_steps) for i in range(n_chunks) if i % 2 == 0])
-    test_indices = np.hstack([range(i * time_chunk_steps, (i + 1) * time_chunk_steps) for i in range(n_chunks) if i % 2 != 0])
-    F_train = F[train_indices]
-    G_train = G[train_indices]
-    F_test = F[test_indices]
-    G_test = G[test_indices]
-
-    # Compute the covariance matrix and its svd
-    C = F_train.T.dot(G_train) / (F_train.shape[0] - 1)
+    C = F_train.T.dot(G_train) / (T//2 - 1)
     U, S, VT = np.linalg.svd(C)
+    Sk = np.einsum('ik, it, tj, kj, -> k', U, F_test.T, G_test, VT)
+    Sk_tot_1 = np.einsum('ik, it, tj, jk, -> k', U, F_test.T, F_test, U)
+    Sk_tot_2 = np.einsum('ki, it, tj, kj, -> k', VT, G_test.T, G_test, VT)
+    Sk_tot = Sk_tot_1 + Sk_tot_2
+    percent_reliable_var = (Sk/(T//2)) / (Sk_tot/T)
 
-    reliable_var = np.sum(U.dot(F_test.T) * ((VT.T.dot(G_test.T))), axis=1)/(F_test.shape[0]-1)
-
-    return reliable_var
+    return percent_reliable_var
 
 def compute_psi_tau(X, demean=True, n_derangements=10):
     """Compute the psi_tau for a data matrix X. X must have shape (samples, features)."""

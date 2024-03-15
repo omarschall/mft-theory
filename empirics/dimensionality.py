@@ -93,7 +93,8 @@ def compute_psi_tau(X, demean=True, n_derangements=10):
         shuffle_idx = random_derangement(X.shape[1])
         fourier_X = np.fft.rfft(X, axis=0, norm='ortho')
         fourier_cross_covs = np.conjugate(fourier_X) * fourier_X[:, shuffle_idx]
-        psi_tau = np.fft.irfft(fourier_cross_covs, axis=0)**2
+        psi_tau = (np.abs(np.fft.irfft(fourier_cross_covs, axis=0))**2).mean(1)
         psi_tau_estimates.append(psi_tau)
+    psi_tau_estimates = np.array(psi_tau_estimates)
 
-    return np.mean(psi_tau_estimates)
+    return psi_tau_estimates.mean(0)

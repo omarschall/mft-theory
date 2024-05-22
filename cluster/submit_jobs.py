@@ -51,9 +51,9 @@ def submit_job(job_file_path, n_array,
         dependency_arg = '--dependency=afterok:{}'.format(id_dependency)
 
     ### -- Submit job --- ###
-    sbatch_command = 'sbatch {} --exclude=ax[01-13],ax[17-19] --array=1-{} {}'.format(dependency_arg,
-                                                                                   n_array,
-                                                                                   job_path)
+    sbatch_command = 'sbatch {} --exclude=ax[01-13],ax[17-19] --array=1-{} -A lkumar -p lkumar {}'.format(dependency_arg,
+                                                                                                          n_array,
+                                                                                                          job_path)
 
     if execute:
         job_stdout = get_ipython().getoutput(sbatch_command)
@@ -130,9 +130,6 @@ def write_job_file(job_name, py_file_name='main.py',
         f.write(
             '#! /bin/bash\n'
             + '\n'
-            + '#SBATCH --nodes={}\n'.format(nodes)
-            + '#SBATCH --ntasks-per-node=1\n'
-            + '#SBATCH --cpus-per-task={}\n'.format(ppn)
             + '#SBATCH --gres=gpu:{}\n'.format(n_gpus)
             + '#SBATCH --mem={}GB\n'.format(mem)
             + '#SBATCH --time={}:00:00\n'.format(n_hours)

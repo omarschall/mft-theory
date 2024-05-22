@@ -33,8 +33,8 @@ def phi_prime_x(z, Delta_0):
 
     return 1/np.cosh(np.sqrt(Delta_0)*z)**2 * np.sqrt(Delta_0)
 
-def compute_alpha(g):
-
-    Delta_0 = solve_for_Delta_0(g=g, Delta_0_init=70)
-    f = partial(phi_prime_x, Delta_0=Delta_0)
-    return gaussian_integral(f)
+#def compute_alpha(g):#
+#
+#    Delta_0 = solve_for_Delta_0(g=g, Delta_0_init=70)
+#    f = partial(phi_prime_x, Delta_0=Delta_0)
+#    return gaussian_integral(f)

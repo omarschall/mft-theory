@@ -101,8 +101,10 @@ def start_axon_jupyter_notebook(project_name='low-rank-dims',
                          'sjupyter',
                          '-A lkumar -p lkumar',
                          '--time={}:00:00'.format(time_in_hours),
+                         '--priority=4294967290',
                          '--mem={}GB'.format(mem_in_gb),
                          '--gres=gpu:{}'.format(n_gpus)], capture_output=True)
+    print(sp.stdout)
     address = str(sp.stdout).split('http://')[1].split('/?token=')
     ip, port = address[0].split(':')
     token = address[1].split('\\n[I')[0]

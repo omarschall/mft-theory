@@ -8,6 +8,7 @@ def submit_job(job_file_path, n_array,
                project_name='low-rank-dims',
                results_subdir='misc',
                module_name='mft-theory',
+               lkumar=True,
                execute=False):
     """Submit an array job in reference to a particular job file, with a
     specified number of sub-jobs. Creates directories for storing results."""
@@ -51,9 +52,14 @@ def submit_job(job_file_path, n_array,
         dependency_arg = '--dependency=afterok:{}'.format(id_dependency)
 
     ### -- Submit job --- ###
-    sbatch_command = 'sbatch {} --exclude=ax[01-13],ax[17-19] --array=1-{} -A lkumar -p lkumar {}'.format(dependency_arg,
-                                                                                                          n_array,
-                                                                                                          job_path)
+    if lkumar:
+        sbatch_command = 'sbatch {} --array=1-{} -A lkumar -p lkumar {}'.format(dependency_arg,
+                                                                                n_array,
+                                                                                job_path)
+    else:
+        sbatch_command = 'sbatch {} --array=1-{} {}'.format(dependency_arg,
+                                                             n_array,
+                                                             job_path)
 
     if execute:
         job_stdout = get_ipython().getoutput(sbatch_command)

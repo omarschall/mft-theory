@@ -60,15 +60,18 @@ def shared_variance_components_analsys(X):
     C = F_train.T.dot(G_train) / (T//2 - 1)
     U, S, VT = np.linalg.svd(C)
     print('done with svd)')
-    Sk = np.einsum('ik, it, tj, kj -> k', U, F_test.T, G_test, VT)
-    print('done with first Sk')
-    Sk_tot_1 = np.einsum('ik, it, tj, jk -> k', U, F_test.T, F_test, U)
+    #Sk = np.einsum('ik, it, tj, kj -> k', U, F_test.T, G_test, VT)
+    Sk = np.einsum('tk, tk -> k', F_test.dot(U), G_test.dot(VT.T))
+    print('done with Sk')
+    #Sk_tot_1 = np.einsum('ik, it, tj, jk -> k', U, F_test.T, F_test, U)
+    Sk_tot_1 = np.einsum('tk, tk -> k', F_test.dot(U), F_test.dot(U))
     print('done with Sk_tot_1')
-    Sk_tot_2 = np.einsum('ki, it, tj, kj -> k', VT, G_test.T, G_test, VT)
+    #Sk_tot_2 = np.einsum('ki, it, tj, kj -> k', VT, G_test.T, G_test, VT)
+    Sk_tot_2 = np.einsum('tk, tk -> k', G_test.dot(VT.T), G_test.dot(VT.T))
     Sk_tot = Sk_tot_1 + Sk_tot_2
     percent_reliable_var = (Sk/(T//2)) / (Sk_tot/T)
 
-    return percent_reliable_var
+    return Sk, Sk_tot, percent_reliable_var
 
 def compute_psi_tau(X, demean=True, n_derangements=10):
     """Compute the psi_tau for a data matrix X. X must have shape (samples, features)."""

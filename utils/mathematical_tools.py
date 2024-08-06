@@ -47,3 +47,90 @@ def generate_real_matrix(eigenvalues):
     M = P_inv @ B @ P
 
     return M
+
+
+def invert_PR_by_newton(PR, initial_guess=1.0, tolerance=1e-5, max_iterations=100):
+    """Thanks chat gpt 4o"""
+
+    # Define the function and its derivative
+    def f(beta):
+        return (1 / beta) * np.tanh(beta) - PR
+
+    def f_prime(beta):
+        return (-1 / (beta ** 2)) * np.tanh(beta) + (1 / beta) * (1 - np.tanh(beta) ** 2)
+
+    beta = initial_guess
+    for _ in range(max_iterations):
+        beta_new = beta - f(beta) / f_prime(beta)
+        if abs(beta_new - beta) < tolerance:
+            return beta_new
+        beta = beta_new
+
+    raise ValueError("Newton's method did not converge")
+
+from scipy.interpolate import interp1d
+def G_i(i, N, beta):
+    return (i / N) ** beta
+
+def compute_PR_(N, beta):
+    G = np.array([G_i(i, N, beta) for i in range(1, N + 1)])
+    sum_G = np.sum(G)
+    sum_G2 = np.sum(G ** 2)
+    PR = (sum_G ** 2) / (N * sum_G2)
+    return PR
+
+
+def invert_PR_approx(PR):
+    return 2 * (1 - PR) / PR
+
+def get_exact_beta_for_PR(PR, N=1000, beta_range=(0.01, 10), num_points=1000):
+    beta_values = np.linspace(beta_range[0], beta_range[1], num_points)
+    PR_values = [compute_PR_(N, beta) for beta in beta_values]
+
+    # Create an interpolation function
+    interp_func = interp1d(PR_values, beta_values, kind='cubic', fill_value='extrapolate')
+
+    # Get the initial approximation
+    beta_approx = invert_PR_approx(PR)
+
+    # Refine the approximation using interpolation
+    beta_exact = interp_func(PR)
+
+    return beta_approx, beta_exact
+
+
+def compute_PR(beta, N):
+    D = np.array([(i / N) ** beta for i in range(1, N + 1)])
+    PR = (D.sum() ** 2) / (np.sum(D ** 2) * N)
+    return PR
+
+def find_beta_for_PR(desired_PR, N, tolerance=0.001, learning_rate=0.01):
+    """Thanks chatgpt 4o for writing this."""
+    # Start with the approximate formula
+    beta = -2 * (1 - desired_PR) / desired_PR
+
+    # Define a function to compute the error
+    def error(beta):
+        current_PR = compute_PR(beta, N)
+        return current_PR - desired_PR
+
+    # Perform a simple iterative method to refine beta
+    max_iterations = 10000
+    iteration = 0
+
+    while abs(error(beta)) > tolerance and iteration < max_iterations:
+        beta -= learning_rate * error(beta)
+        iteration += 1
+
+    if iteration == max_iterations:
+        print("Warning: Maximum iterations reached without achieving desired precision.")
+
+    return beta, compute_PR(beta, N)
+
+def power_law_fit(y_data, x_data=None):
+    if x_data is None:
+        x_data = np.arange(1, len(y_data) + 1)
+    log_y = np.log(y_data)
+    log_x = np.log(x_data)
+    slope, intercept = np.polyfit(log_x, log_y, 1)
+    return slope, intercept

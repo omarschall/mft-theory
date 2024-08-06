@@ -33,6 +33,7 @@ def uni_corr(X_rfft, Y_rfft, dt, dim=None):
 def uni_inv(X_rfft):
     return 1. / (2 * np.pi * X_rfft)
 
+phi_torch = lambda x: torch.erf((np.sqrt(np.pi)/2)*x)
 
 """
 Gaussian process and single-site dynamics utilities.
@@ -107,7 +108,7 @@ def run_dynamics(eta, dt, kernel=None):
         start = max(0, i - nk)
         nk_stop = i - start
         kernel_contribution = dt * torch.trapz(
-            torch.tanh(torch.flip(x[:, start:i], dims=(1,))) * kernel[None, :nk_stop], dim=1
+            phi_torch(torch.flip(x[:, start:i], dims=(1,))) * kernel[None, :nk_stop], dim=1
         ) if nk_stop > 0 else 0.0
         x[:, i] = (1 - dt) * x[:, i - 1] + dt * eta[:, i] + dt * kernel_contribution
 
@@ -125,7 +126,7 @@ def update_sym(g, sigma, C, S, N_samples, dt):
     eta = g * sample_gp(C, N_samples)
     nk = int(100 / dt)
     x = run_dynamics(eta, dt=dt, kernel=sigma * S[:nk])
-    phi = torch.tanh(x)
+    phi = phi_torch(x)
 
     C_updated = compute_C(phi, -1)
     S_updated = compute_S(phi, eta, (g ** 2) * C, dt)
@@ -145,7 +146,7 @@ def update_LDR_sym(d, rho, C, S, N_samples, dt):
     eta = sample_gp(D, N_samples)
     nk = int(50 / dt)
     x = run_dynamics(eta, dt=dt, kernel=R[:nk])
-    phi = torch.tanh(x)
+    phi = phi_torch(x)
 
     C_updated = compute_C(phi, -1)
     S_updated = compute_S(phi, eta, D, dt)
@@ -163,12 +164,15 @@ def get_init_params(N_t, dt, device):
     return C, S
 
 
-def solve_dmft(update_fn, N_t, init_dt, num_iter, device, alpha=1, C_init=None, S_init=None, callback_fn=None):
+def solve_dmft(update_fn, N_t, init_dt, num_iter, device, alpha=1, C_init=None, S_init=None, callback_fn=None,
+               final_avg_iter=1):
     if C_init is None or S_init is None:
         C, S = get_init_params(N_t, init_dt, device)
     else:
         C, S = C_init.clone(), S_init.clone()
 
+    C_for_avg = torch.zeros(final_avg_iter, N_t, device=device)
+    S_for_avg = torch.zeros(final_avg_iter, N_t, device=device)
     for i in range(num_iter):
         C_updated, S_updated = update_fn(C=C, S=S)
         C = alpha * C_updated + (1 - alpha) * C
@@ -176,6 +180,13 @@ def solve_dmft(update_fn, N_t, init_dt, num_iter, device, alpha=1, C_init=None, 
 
         if callback_fn is not None:
             callback_fn(C, S, i)
+
+        if num_iter - i <= final_avg_iter:
+            C_for_avg[num_iter - i - 1] = C
+            S_for_avg[num_iter - i - 1] = S
+
+    C = C_for_avg.mean(0)
+    S = S_for_avg.mean(0)
 
     return C, S
 
@@ -186,7 +197,7 @@ Simulations.
 """
 
 
-def run_sim(T, dt, T_eval, J, x_init=None, N_batch=1, nonlin=torch.tanh, disable_tqdm=False):
+def run_sim(T, dt, T_eval, J, x_init=None, N_batch=1, nonlin=phi_torch, disable_tqdm=False):
     device = J.device
     N_t = int(T / dt)
     N = J.shape[0]

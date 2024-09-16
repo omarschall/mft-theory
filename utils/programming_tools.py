@@ -23,3 +23,18 @@ def config_generator(**kwargs):
     vals = kwargs.values()
     for instance in itertools.product(*vals):
         yield dict(zip(keys, instance))
+
+def reverse_index_config(micro_config, configs_array):
+    # Generate all micro-configurations using Cartesian product
+    values = list(configs_array.values())
+    micro_configs = list(itertools.product(*values))
+
+    # Create a reverse index mapping
+    reverse_index = {}
+    for idx, mc in enumerate(micro_configs):
+        reverse_index[mc] = idx
+
+    # Example: get the index of a particular micro-configuration
+    index_of_sample = reverse_index[micro_config]
+
+    return index_of_sample

@@ -193,7 +193,10 @@ def unpack_processed_data(job_file_path,
 
     for key in configs_array.keys():
 
-        configs_array[key] = sorted(configs_array[key])
+        try:
+            configs_array[key] = sorted(configs_array[key])
+        except TypeError:
+            pass
 
     ### --- Determine shape of processed data --- ###
 

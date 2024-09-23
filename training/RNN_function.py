@@ -51,17 +51,26 @@ class RNNModel(nn.Module):
     def __init__(self, N, N_in, init_scale=0, output_bias=False, dt=0.05,
                  trainable_input=False, W_scale=None,
                  W_in_scale=None, gp_samples=None,
-                 pulse_duration=None):
+                 pulse_duration=None, common_output_dim=True):
         super(RNNModel, self).__init__()
         self.rnn_cell = RNNCell(N, N_in, dt=dt,
                                 trainable_input=trainable_input,
                                 W_scale=W_scale,
                                 W_in_scale=W_in_scale)
-        self.W_out = nn.Linear(N, 1, bias=output_bias)
+        self.common_output_dim = common_output_dim
+        self.N_in = N_in
+
+        # Set the number of output dimensions based on the flag
+        if common_output_dim:
+            self.N_out = 1
+        else:
+            self.N_out = N_in
+
+        # Initialize the output layer with the appropriate output dimension
+        self.W_out = nn.Linear(N, self.N_out, bias=output_bias)
         self.init_scale = init_scale
         self.hidden_states = []  # To store hidden states
         self.N = self.rnn_cell.N
-        self.N_in = self.rnn_cell.N_in
         self.gp_samples = gp_samples
         self.pulse_duration = pulse_duration
 
@@ -83,13 +92,16 @@ class RNNModel(nn.Module):
             else:
                 h = self.rnn_cell(h, x)  # Process the batch
             self.hidden_states.append(h)
-            outputs.append(self.W_out(h).unsqueeze(1))  # Shape (batch_size, 1) -> (batch_size, 1, 1)
+            # Adjust the output shape based on N_out
+            outputs.append(self.W_out(h).unsqueeze(1))  # Shape: (batch_size, 1, N_out)
 
-        outputs = torch.cat(outputs, dim=1)  # Concatenate along the time dimension -> (batch_size, time_steps, 1)
+        outputs = torch.cat(outputs, dim=1)  # Shape: (batch_size, time_steps, N_out)
         return outputs
+
 
     def get_hidden_states(self, dt_save=1):
         # Concatenate the hidden states across the time dimension
         # Shape: (time_steps * batch_size, N)
         H = self.hidden_states[::int(dt_save / self.rnn_cell.dt)]
         return torch.stack(H)
+

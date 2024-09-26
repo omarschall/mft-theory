@@ -95,6 +95,9 @@ class RNNModel(nn.Module):
             # Adjust the output shape based on N_out
             outputs.append(self.W_out(h).unsqueeze(1))  # Shape: (batch_size, 1, N_out)
 
+        print(len(outputs))
+        print(outputs[0].shape)
+
         outputs = torch.cat(outputs, dim=1)  # Shape: (batch_size, time_steps, N_out)
         return outputs
 

@@ -5,18 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a14fd267-bb60-4594-bf69-e8f1d3d56f18" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/core/Update_Step.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LDR_dim/condensed_tasks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LDR_dim/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/LDR_dim/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LDR_dim/util.py" beforeDir="false" afterPath="$PROJECT_DIR$/LDR_dim/util.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cluster/start_jupyter_notebook.py" beforeDir="false" afterPath="$PROJECT_DIR$/cluster/start_jupyter_notebook.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cluster/submit_jobs.py" beforeDir="false" afterPath="$PROJECT_DIR$/cluster/submit_jobs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/Estimate_Cov.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/Estimate_Cov.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/Estimate_Psi.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/Estimate_Psi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/Estimate_Single_Unit_Prop.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/Estimate_Single_Unit_Prop.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/Sample_Activity.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/Sample_Activity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/empirics/dimensionality.py" beforeDir="false" afterPath="$PROJECT_DIR$/empirics/dimensionality.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/mathematical_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/mathematical_tools.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/Update_Step.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/Update_Step.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jupyter_notebook.py" beforeDir="false" afterPath="$PROJECT_DIR$/jupyter_notebook.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/theory/david_dmft.py" beforeDir="false" afterPath="$PROJECT_DIR$/theory/david_dmft.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/training/RNN_function.py" beforeDir="false" afterPath="$PROJECT_DIR$/training/RNN_function.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

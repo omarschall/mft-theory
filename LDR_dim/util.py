@@ -44,13 +44,16 @@ Gaussian process and single-site dynamics utilities.
 """
 
 
-def sample_gp(C, N_samples, ft_cutoff=None):
+def sample_gp(C, N_samples, ft_cutoff=None, C_in_fourier=False):
     N_t = len(C)
     if N_t % 2 != 0:
         raise ValueError("Length of C must be even")
 
     device = C.device
-    C_ft = torch.fft.rfft(C, norm='forward').real
+    if C_in_fourier:
+        C_ft = C
+    else:
+        C_ft = torch.fft.rfft(C, norm='forward').real
     C_ft_sqrt = torch.sqrt(torch.clamp(C_ft, min=0))
 
     if ft_cutoff is not None:
@@ -85,7 +88,7 @@ def compute_S(phi, eta, C_eta, dt):
     eta_ft = uni_rfft(eta, dt, dim=1)
     C_phi_eta_ft = uni_corr(phi_ft, eta_ft, dt, dim=1).mean(0)
     C_eta_ft = uni_rfft(C_eta, dt)
-    C_eta_ft[C_eta_ft == 0] = np.nan
+    C_eta_ft[C_eta_ft.abs() < 1e-10] = 1e-10
     S_ft = uni_conv(C_phi_eta_ft, uni_inv(C_eta_ft))
     S_ft[torch.isnan(S_ft)] = 0.0
     S = uni_irfft(S_ft, dt)
@@ -134,12 +137,12 @@ def update_sym(g, sigma, C, S, N_samples, dt):
     return C_updated, S_updated
 
 
-def update_LDR_sym(d, rho, C, S, N_samples, dt):
+def update_LDR_sym(d, rho, C, S, N_samples, dt, alpha=1):
     C_ft, S_ft = (uni_rfft(param, dt) for param in (C, S))
 
     sigma = (1/(1 - np.sqrt(2*np.pi)*d*rho*S_ft[:, None])) # Latent variable linear response fn.
-    D_ft =  (d**2 * torch.abs(sigma)**2).mean(-1) * C_ft
-    R_ft =  (d*rho*sigma).mean(-1) / np.sqrt(2*np.pi)
+    D_ft = alpha*(d**2 * torch.abs(sigma)**2).mean(-1) * C_ft
+    R_ft = alpha*(d*rho*sigma).mean(-1) / np.sqrt(2*np.pi)
 
     D, R = (uni_irfft(param, dt) for param in (D_ft, R_ft))
 
@@ -165,7 +168,7 @@ def get_init_params(N_t, dt, device):
 
 
 def solve_dmft(update_fn, N_t, init_dt, num_iter, device, alpha=1, C_init=None, S_init=None, callback_fn=None,
-               final_avg_iter=1):
+               final_avg_iter=1, verbose=False):
     if C_init is None or S_init is None:
         C, S = get_init_params(N_t, init_dt, device)
     else:
@@ -174,6 +177,10 @@ def solve_dmft(update_fn, N_t, init_dt, num_iter, device, alpha=1, C_init=None, 
     C_for_avg = torch.zeros(final_avg_iter, N_t, device=device)
     S_for_avg = torch.zeros(final_avg_iter, N_t, device=device)
     for i in range(num_iter):
+
+        if verbose:
+            print(f"Iteration {i+1}/{num_iter}")
+
         C_updated, S_updated = update_fn(C=C, S=S)
         C = alpha * C_updated + (1 - alpha) * C
         S = alpha * S_updated + (1 - alpha) * S

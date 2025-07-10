@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def update_step(x, dt, W, phi_torch, noise_sigma=0, runga_kutta=False):
+def update_step(x, dt, W, phi_torch, noise_sigma=0, runga_kutta=False, input_current=None):
     """General update step that can handle both Euler and Runge-Kutta integration
     for noise driven, non-noise driven, linear and non-linear networks."""
 
@@ -30,5 +30,8 @@ def update_step(x, dt, W, phi_torch, noise_sigma=0, runga_kutta=False):
 
     if noise_sigma > 0:
         x += np.sqrt(dt) * noise_sigma * torch.randn_like(x)
+
+    if input_current is not None:
+        x += dt * input_current
 
     return x, r

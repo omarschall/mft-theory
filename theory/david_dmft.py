@@ -35,20 +35,20 @@ def compute_potential(Delta, Delta_0, g, A):
 C_fn = compute_C_simple
 Phi_fn = compute_C_antideriv
 
-def compute_V(Delta_0, Delta, g):
-    t1 = -0.5*(Delta**2 - Delta_0**2)
+def compute_V(Delta_0, Delta, g, leak=1):
+    t1 = -0.5*leak*(Delta**2 - Delta_0**2)
     t2 = (g**2)*(Phi_fn(Delta_0, Delta) - Phi_fn(Delta_0, Delta_0))
     return t1+t2
 
-def compute_V_deriv(Delta_0, Delta, g):
-    t1 = -Delta
+def compute_V_deriv(Delta_0, Delta, g, leak=1):
+    t1 = -leak*Delta
     t2 = (g**2)*C_fn(Delta_0, Delta)
     return t1+t2
 
-def compute_Delta_0(g, x0=None):
+def compute_Delta_0(g, x0=None, leak=1):
     def f_opt(Delta_0):
         Delta_0 = np.abs(Delta_0)
-        V = compute_V(Delta_0=Delta_0, Delta=0., g=g)
+        V = compute_V(Delta_0=Delta_0, Delta=0., g=g, leak=leak)
         return V
     res = root(fun=f_opt, x0=g**2 if x0 is None else x0)
     if res.success:
@@ -73,12 +73,16 @@ def fix(Delta):
 def symmetrize(Delta):
     return np.concatenate((Delta, (Delta[-1],), Delta[1:][::-1]))
 
-def integrate_potential(Delta_0, g, tau_max=40, N_tau=1000):
+def integrate_potential(Delta_0, g, leak=1, tau_max=40, N_tau=1000,
+                        driving_term=None):
     def dy_dt(y, t):
         Delta, Delta_dot = y[0], y[1]
         V_deriv = compute_V_deriv(
-            Delta_0=Delta_0, Delta=Delta, g=g)
-        y_dot = np.array([Delta_dot, -V_deriv])
+            Delta_0=Delta_0, Delta=Delta, g=g, leak=leak)
+        if driving_term is not None:
+            y_dot = np.array([Delta_dot, -V_deriv + driving_term[t]])
+        else:
+            y_dot = np.array([Delta_dot, -V_deriv])
         return y_dot
     t_vals = np.linspace(0, tau_max, N_tau)
     out = odeint(dy_dt, y0=np.array([Delta_0, 0.]), t=t_vals, rtol=1e-12)

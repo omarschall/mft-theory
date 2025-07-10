@@ -4,7 +4,8 @@ from .Update_Step import update_step
 
 phi_torch = lambda x: torch.erf((np.sqrt(np.pi)/2)*x)
 def sample_activity(T_sim, dt_save, dt, W, phi_torch=phi_torch, avg_activity=False, x0=None,
-                   N_batch=1, T_save_delay=100, runga_kutta=False, noise_sigma=0):
+                    N_batch=1, T_save_delay=100, runga_kutta=False, noise_sigma=0, input_current=None,
+                    noise_series=None):
     """Thanks to David Clark"""
 
     device = W.device
@@ -29,7 +30,11 @@ def sample_activity(T_sim, dt_save, dt, W, phi_torch=phi_torch, avg_activity=Fal
         r_to_avg[0] = r_save[0]
     for i in range(1, Nt):
         x, r = update_step(x, dt=dt, W=W, phi_torch=phi_torch,
-                           noise_sigma=noise_sigma, runga_kutta=runga_kutta)
+                           noise_sigma=noise_sigma, runga_kutta=runga_kutta,
+                           input_current=input_current)
+        if noise_series is not None:
+            x += dt*noise_series[:,:,i]
+            r = phi_torch(x)
 
         if avg_activity:
             x_to_avg[i % eval_iter] = x

@@ -155,7 +155,8 @@ def unpack_processed_data(job_file_path,
                           results_subdir='misc'):
     """Unpack processed data from an array job."""
 
-    username = get_ipython().getoutput('whoami')[0] #WHOOOO AMMMMM I?
+    username = 'om2382'
+    #username = get_ipython().getoutput('whoami')[0] #WHOOOO AMMMMM I?
     if username == 'oem214':
         project_base = '/scratch/'
     if username == 'om2382':

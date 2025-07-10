@@ -49,8 +49,8 @@ class RNNCell(nn.Module):
 
 class RNNModel(nn.Module):
     def __init__(self, N, N_in, init_scale=0, output_bias=False, dt=0.05,
-                 trainable_input=False, W_scale=None,
-                 W_in_scale=None, gp_samples=None,
+                 trainable_input=False, trainable_output=False, W_scale=None,
+                 W_in_scale=None, W_out_scale=None, gp_samples=None,
                  pulse_duration=None):
         super(RNNModel, self).__init__()
         self.rnn_cell = RNNCell(N, N_in, dt=dt,
@@ -58,6 +58,10 @@ class RNNModel(nn.Module):
                                 W_scale=W_scale,
                                 W_in_scale=W_in_scale)
         self.W_out = nn.Linear(N, 1, bias=output_bias)
+        if W_out_scale is not None:
+            self.W_out.weight.data *= W_out_scale
+        for param in self.W_out.parameters():
+            param.requires_grad = trainable_output
         self.init_scale = init_scale
         self.hidden_states = []  # To store hidden states
         self.N = self.rnn_cell.N

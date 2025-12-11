@@ -192,6 +192,66 @@ def sample_W_optimized(sigma_mn_all, D, N, n_var=1, seed=None):
 
     return W, loadings.cpu().numpy()
 
+def sample_W_optimized_with_barcodes(sigma_mn_all, D, N, f=1, n_var=1, seed=None):
+    # Use CPU or GPU depending on availability
+    device = 0
+
+    # Get dimensions
+    R = sigma_mn_all.shape[0]
+    N_tasks = sigma_mn_all.shape[2]
+
+    # Convert inputs to torch tensors with appropriate dtype
+    sigma_mn_all = torch.from_numpy(sigma_mn_all.astype(np.float32)).to(device)  # (R, R, N_tasks)
+    D_tensor = torch.from_numpy(D.astype(np.float32)).to(device)  # (N_tasks,)
+
+    # Create identity matrices for sigma_mm and sigma_nn
+    sigma_mm = torch.eye(R, dtype=torch.float32, device=device).unsqueeze(2).repeat(1, 1, N_tasks)  # (R, R, N_tasks)
+    sigma_nn = n_var*torch.eye(R, dtype=torch.float32, device=device).unsqueeze(2).repeat(1, 1, N_tasks)
+
+    # Build full covariance matrices for all tasks
+    covariance_top = torch.cat([sigma_mm, sigma_mn_all], dim=1)  # (R, 2R, N_tasks)
+    covariance_bot = torch.cat([sigma_mn_all.transpose(0, 1), sigma_nn], dim=1)  # (R, 2R, N_tasks)
+    covariance = torch.cat([covariance_top, covariance_bot], dim=0)  # (2R, 2R, N_tasks)
+    covariance = (1 / N) * covariance  # Scale by (1/N)
+
+    # Mean vector (zero mean) for all tasks
+    mean = torch.zeros(2 * R, N_tasks, dtype=torch.float32, device=device)  # (2R, N_tasks)
+
+    # Create multivariate normal distributions for each task
+    if seed is not None:
+        torch.manual_seed(seed)
+    mvn = torch.distributions.MultivariateNormal(
+        mean.T,  # (N_tasks, 2R)
+        covariance_matrix=covariance.permute(2, 0, 1)  # (N_tasks, 2R, 2R)
+    )
+
+    # Sample loadings: Shape (N_tasks, N, 2R)
+    loadings = mvn.rsample((N,))  # (N, N_tasks, 2R)
+    loadings = loadings.permute(1, 0, 2)  # (N_tasks, N, 2R)
+
+    if f < 1:
+        #sample barcodes
+        barcodes = torch.bernoulli(f*torch.ones(N_tasks, N, dtype=torch.float32, device=device))
+        loadings[:,:,:R] = loadings[:,:,:R] * barcodes[:,:,None]
+        loadings[:,:,R:] = loadings[:,:,R:] * barcodes[:,:,None]
+
+    # Split loadings into two parts
+    loadings_m = loadings[:, :, :R]  # (N_tasks, N, R)
+    loadings_n = loadings[:, :, R:]  # (N_tasks, N, R)
+
+    # Multiply loadings_m by D
+    D_expanded = D_tensor[:, None, None]  # (N_tasks, 1, 1)
+    loadings_m_weighted = D_expanded * loadings_m  # (N_tasks, N, R)
+
+    # Reshape loadings_m_weighted and loadings_n to (N, N_tasks * R)
+    loadings_m_weighted_flat = loadings_m_weighted.permute(1, 0, 2).reshape(N, -1)  # (N, N_tasks * R)
+    loadings_n_flat = loadings_n.permute(1, 0, 2).reshape(N, -1)  # (N, N_tasks * R)
+
+    # Compute W = loadings_m_weighted_flat @ loadings_n_flat.T
+    W = loadings_m_weighted_flat @ loadings_n_flat.T  # (N, N)
+
+    return W, loadings.cpu().numpy()
+
 def run_z_dynamics(eta, dt, d, C_rr, kernel=None):
     N_z, N_t = eta.shape
     pad = N_t // 2

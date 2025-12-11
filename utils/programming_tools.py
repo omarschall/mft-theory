@@ -1,5 +1,6 @@
 import itertools
 from functools import reduce
+import numpy as np
 
 def rgetattr(obj, attr):
     """A "recursive" version of getattr that can handle nested objects.
@@ -38,3 +39,30 @@ def reverse_index_config(micro_config, configs_array):
     index_of_sample = reverse_index[micro_config]
 
     return index_of_sample
+
+def populations_by_bitmask(all_loadings, on_slice=0):
+    """
+    Vectorized grouping by bitmask.
+    Returns:
+      combos: list of tuples length N_tasks with 0/1
+      pops:   list of np.ndarray of neuron indices per combo, same order as combos
+    """
+    N_tasks, N = all_loadings.shape[0], all_loadings.shape[1]
+
+    # Boolean task x neuron: True if neuron is "on" for that task
+    on = (all_loadings[:, :, on_slice] != 0)  # shape [T, N]
+
+    # Bitmask code per neuron: sum( on[t,j] << t )
+    codes = (on.astype(np.uint32) * (1 << np.arange(N_tasks, dtype=np.uint32)[:, None])).sum(axis=0)
+
+    # Collect indices for every possible code (0..2^T-1)
+    combos = []
+    pops = []
+    for code in range(1 << N_tasks):
+        idx = np.flatnonzero(codes == code)
+        pops.append(idx)  # np.ndarray of neuron indices
+        # decode code -> tuple of bits (0/1) in task order
+        combo = tuple((code >> t) & 1 for t in range(N_tasks))
+        combos.append(combo)
+
+    return combos, pops

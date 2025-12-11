@@ -96,23 +96,6 @@ def solve_spontaneous(
     }
     return out
 
-def wgrid(N, T):
-    dt = T / N
-    return 2.0 * np.pi * np.fft.fftfreq(N, d=dt)
-
-
-def erf_gain(q):
-    return 1.0 / math.sqrt(1.0 + (math.pi / 2.0) * max(q, 0.0))
-
-
-def Cphi_from_Cx(Cx_tau):
-    q = float(Cx_tau[0]);
-    q = max(q, 1e-12)
-    rho = Cx_tau / q
-    t = ((math.pi / 2.0) * q * rho) / (1.0 + (math.pi / 2.0) * q)
-    t = np.clip(t, -1.0, 1.0)
-    return (2.0 / np.pi) * np.arcsin(t)
-
 def solve_condensed(
         N=4096, T=200.0,
         alpha=1.0, R=2,
@@ -121,7 +104,7 @@ def solve_condensed(
         g=None, mix=0.25, iters=800, tol=1e-9, plus=True
 ):
     # grids
-    w = wgrid(N, T)
+    w = angular_frequencies(N, T)
     t = np.arange(N) * (T / N)
     cos_theta = 1.0 / math.sqrt(1.0 + omega_star ** 2)
 
@@ -154,17 +137,17 @@ def solve_condensed(
         # set coherent amplitude to hit marginality exactly
         P = max(0.0, q_target - q_noise)
 
-        rho = np.sqrt(P * (1 + omega_star ** 2))
+        #rho = np.sqrt(P * (1 + omega_star ** 2))
 
         # total covariance in time
         Cx_tau = Cx_noise + P * np.cos(omega_star * t)
 
         # gain from total q
         q = float(Cx_tau[0])
-        gain = erf_gain(q)
+        gain = erf_gain_from_q(q)
 
         # nonlinear mapping
-        Cphi_tau = Cphi_from_Cx(Cx_tau)
+        Cphi_tau = Cphi_from_Cx_time(Cx_tau)
         Sphi = np.fft.fft(Cphi_tau).real
 
         # bulk transfer (uses D_bulk and current gain)
@@ -195,7 +178,7 @@ def solve_condensed(
         iters=k + 1, w=w, t=t,
         S_noise=S_noise, P=P, S_pred=S_pred, Scoh=Scoh,
         Cx_tau=Cx_noise_new + P * np.cos(omega_star * t),
-        q=q_total_new, gain=erf_gain(q_total_new),
+        q=q_total_new, gain=erf_gain_from_q(q_total_new),
         g_eff=g_eff, q_target=q_target, denom0=denom0,
         spont=False
     )

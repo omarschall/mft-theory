@@ -2,3 +2,5 @@ from .close_jupyter_notebook import close_jupyter_notebook
 from .start_jupyter_notebook import start_jupyter_notebook, start_axon_jupyter_notebook
 from .submit_jobs import write_job_file, submit_job, unpack_processed_data
 from .sync_cluster import sync_cluster, sync_columbia_cluster
+from .watch_and_sync import watch_and_sync
+from .list_cluster_notebooks import list_notebooks, download_notebook, sync_all_notebooks

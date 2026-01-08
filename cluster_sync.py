@@ -58,6 +58,11 @@ Examples:
             # Keep running until interrupted
             while True:
                 time.sleep(1)
+        except ImportError as e:
+            print(f"❌ {e}")
+            print("\n💡 Tip: You can still use one-time sync without watchdog:")
+            print(f"   python cluster_sync.py --cluster {cluster}")
+            sys.exit(1)
         except KeyboardInterrupt:
             if not args.quiet:
                 print("\n🛑 Stopping file watcher...")

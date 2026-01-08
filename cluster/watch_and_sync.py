@@ -7,107 +7,121 @@ import time
 import subprocess
 import sys
 from pathlib import Path
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    WATCHDOG_AVAILABLE = True
+except ImportError:
+    WATCHDOG_AVAILABLE = False
+    # Create dummy classes so the module can be imported
+    Observer = None
+    FileSystemEventHandler = object  # Use object as base class fallback
+
 from cluster.sync_cluster import sync_cluster, sync_columbia_cluster
 
-class ClusterSyncHandler(FileSystemEventHandler):
-    """Handler that syncs to cluster when files change."""
-    
-    def __init__(self, cluster='columbia', debounce_seconds=2, verbose=True):
-        """
-        Args:
-            cluster: 'columbia' or 'nyu' (or 'greene')
-            debounce_seconds: Wait this long after last change before syncing
-            verbose: Print sync messages
-        """
-        self.cluster = cluster
-        self.debounce_seconds = debounce_seconds
-        self.verbose = verbose
-        self.last_change_time = 0
-        self.sync_timer = None
-        self.pending_sync = False
+if WATCHDOG_AVAILABLE:
+    class ClusterSyncHandler(FileSystemEventHandler):
+        """Handler that syncs to cluster when files change."""
         
-    def should_sync_file(self, file_path):
-        """Check if a file should trigger a sync."""
-        path = Path(file_path)
-        
-        # Skip hidden files and directories
-        if any(part.startswith('.') for part in path.parts):
-            return False
-        
-        # Skip common non-code files
-        skip_extensions = {'.pyc', '.pyo', '.pyd', '.so', '.egg', '.swp', '.swo'}
-        if path.suffix in skip_extensions:
-            return False
-        
-        # Skip __pycache__ directories
-        if '__pycache__' in path.parts:
-            return False
-        
-        # Skip .git directory
-        if '.git' in path.parts:
-            return False
-        
-        return True
-    
-    def on_modified(self, event):
-        if event.is_directory:
-            return
-        
-        if not self.should_sync_file(event.src_path):
-            return
-        
-        self.last_change_time = time.time()
-        self.pending_sync = True
-        
-        if self.verbose:
-            print(f"📝 Detected change: {event.src_path}")
-    
-    def on_created(self, event):
-        if event.is_directory:
-            return
-        
-        if not self.should_sync_file(event.src_path):
-            return
-        
-        self.last_change_time = time.time()
-        self.pending_sync = True
-        
-        if self.verbose:
-            print(f"➕ New file: {event.src_path}")
-    
-    def on_deleted(self, event):
-        if event.is_directory:
-            return
-        
-        if not self.should_sync_file(event.src_path):
-            return
-        
-        self.last_change_time = time.time()
-        self.pending_sync = True
-        
-        if self.verbose:
-            print(f"🗑️  Deleted: {event.src_path}")
-    
-    def check_and_sync(self):
-        """Check if enough time has passed since last change, then sync."""
-        if not self.pending_sync:
-            return
-        
-        time_since_change = time.time() - self.last_change_time
-        if time_since_change >= self.debounce_seconds:
+        def __init__(self, cluster='columbia', debounce_seconds=2, verbose=True):
+            """
+            Args:
+                cluster: 'columbia' or 'nyu' (or 'greene')
+                debounce_seconds: Wait this long after last change before syncing
+                verbose: Print sync messages
+            """
+            self.cluster = cluster
+            self.debounce_seconds = debounce_seconds
+            self.verbose = verbose
+            self.last_change_time = 0
+            self.sync_timer = None
             self.pending_sync = False
+            
+        def should_sync_file(self, file_path):
+            """Check if a file should trigger a sync."""
+            path = Path(file_path)
+            
+            # Skip hidden files and directories
+            if any(part.startswith('.') for part in path.parts):
+                return False
+            
+            # Skip common non-code files
+            skip_extensions = {'.pyc', '.pyo', '.pyd', '.so', '.egg', '.swp', '.swo'}
+            if path.suffix in skip_extensions:
+                return False
+            
+            # Skip __pycache__ directories
+            if '__pycache__' in path.parts:
+                return False
+            
+            # Skip .git directory
+            if '.git' in path.parts:
+                return False
+            
+            return True
+        
+        def on_modified(self, event):
+            if event.is_directory:
+                return
+            
+            if not self.should_sync_file(event.src_path):
+                return
+            
+            self.last_change_time = time.time()
+            self.pending_sync = True
+            
             if self.verbose:
-                print(f"🔄 Syncing to {self.cluster} cluster...")
+                print(f"📝 Detected change: {event.src_path}")
+        
+        def on_created(self, event):
+            if event.is_directory:
+                return
             
-            if self.cluster in ['columbia', 'axon']:
-                success = sync_columbia_cluster(verbose=self.verbose)
-            else:
-                success = sync_cluster(verbose=self.verbose)
+            if not self.should_sync_file(event.src_path):
+                return
             
-            if success and self.verbose:
-                print("✅ Sync complete\n")
+            self.last_change_time = time.time()
+            self.pending_sync = True
+            
+            if self.verbose:
+                print(f"➕ New file: {event.src_path}")
+        
+        def on_deleted(self, event):
+            if event.is_directory:
+                return
+            
+            if not self.should_sync_file(event.src_path):
+                return
+            
+            self.last_change_time = time.time()
+            self.pending_sync = True
+            
+            if self.verbose:
+                print(f"🗑️  Deleted: {event.src_path}")
+        
+        def check_and_sync(self):
+            """Check if enough time has passed since last change, then sync."""
+            if not self.pending_sync:
+                return
+            
+            time_since_change = time.time() - self.last_change_time
+            if time_since_change >= self.debounce_seconds:
+                self.pending_sync = False
+                if self.verbose:
+                    print(f"🔄 Syncing to {self.cluster} cluster...")
+                
+                if self.cluster in ['columbia', 'axon']:
+                    success = sync_columbia_cluster(verbose=self.verbose)
+                else:
+                    success = sync_cluster(verbose=self.verbose)
+                
+                if success and self.verbose:
+                    print("✅ Sync complete\n")
+else:
+    # Dummy class when watchdog is not available
+    class ClusterSyncHandler:
+        pass
 
 
 def watch_and_sync(cluster='columbia', debounce_seconds=2, watch_path=None, verbose=True):
@@ -122,7 +136,18 @@ def watch_and_sync(cluster='columbia', debounce_seconds=2, watch_path=None, verb
     
     Returns:
         Observer instance (call observer.stop() to stop watching)
+    
+    Raises:
+        ImportError: If watchdog is not installed
     """
+    if not WATCHDOG_AVAILABLE:
+        raise ImportError(
+            "watchdog is required for auto-sync. Install it with:\n"
+            "  pip install watchdog\n"
+            "\n"
+            "Or use one-time sync instead:\n"
+            "  python cluster_sync.py --cluster columbia"
+        )
     if watch_path is None:
         # Auto-detect repo root
         current = Path(__file__).resolve()

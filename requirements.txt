@@ -1,0 +1,30 @@
+# requirements.txt
+# Python package dependencies for mft-theory notebooks
+# 
+# For pip-based installation (alternative to conda):
+#   pip install -r requirements.txt
+#
+# For conda-based installation (recommended):
+#   conda env create -f environment.yml
+
+# Core scientific computing
+numpy>=1.20.0
+scipy>=1.7.0
+matplotlib>=3.3.0
+
+# Deep learning framework
+torch>=2.0.0  # CPU-only version; for GPU use cluster or install cuda version
+
+# Data file formats
+h5py>=3.0.0  # For reading HDF5 files
+
+# Jupyter Notebook
+jupyter>=6.0.0
+notebook>=6.0.0,<7.0.0  # Classic notebook <7.0 for better UI
+jupyterlab>=4.0.0  # Optional, for JupyterLab interface
+
+# Development tools
+watchdog>=2.0.0  # For cluster sync tools (optional for notebook use)
+
+# Note: Python 3.10+ recommended
+# For full environment including exact versions, use environment.yml

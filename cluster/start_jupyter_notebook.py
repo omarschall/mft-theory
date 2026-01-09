@@ -70,12 +70,27 @@ def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
     ### --- Open terminal window and SSH into cluster --- ###
 
     cluster_login = 'ssh -L {}:localhost:{} {}'.format(port, port, remote)
-    appscript.app('Terminal').do_script(cluster_login)
-    time.sleep(5) #Give terminal a few seconds to run SSH
+    try:
+        appscript.app('Terminal').do_script(cluster_login)
+        time.sleep(5) #Give terminal a few seconds to run SSH
+    except NameError:
+        print("\n" + "="*60)
+        print("⚠️  appscript not available - please run this SSH command manually:")
+        print("="*60)
+        print(cluster_login)
+        print("="*60)
+        print("\nAfter running the SSH command, the notebook will be available at:")
+        print(url)
+        print("\nPress Enter once you've started the SSH tunnel...")
+        input()
 
     ### --- Open jupyter notebook in browser --- ###
 
-    webbrowser.open(url)
+    try:
+        webbrowser.open(url)
+    except NameError:
+        print(f"\n⚠️  Could not open browser automatically. Open this URL manually:")
+        print(url)
 
 def start_axon_jupyter_notebook(project_name='low-rank-dims',
                                 time_in_hours=3,
@@ -110,7 +125,26 @@ def start_axon_jupyter_notebook(project_name='low-rank-dims',
     ip, port = address[0].split(':')
     token = address[1].split('\\n[I')[0]
     terminal_command = 'ssh -N -L 8080:{}:{} -p 55 om2382@axon-remote.rc.zi.columbia.edu'.format(ip, port)
-    appscript.app('Terminal').do_script(terminal_command)
-    time.sleep(5)
+    
+    try:
+        appscript.app('Terminal').do_script(terminal_command)
+        time.sleep(5)
+    except NameError:
+        print("\n" + "="*60)
+        print("⚠️  appscript not available - please run this SSH command manually:")
+        print("="*60)
+        print(terminal_command)
+        print("="*60)
+        print("\nAfter running the SSH command, the notebook will be available at:")
+        url = 'http://localhost:8080/?token={}'.format(token)
+        print(url)
+        print("\nPress Enter once you've started the SSH tunnel...")
+        input()
+        return  # Don't try to open browser if we're waiting for manual SSH
+    
     url = 'http://localhost:8080/?token={}'.format(token)
-    webbrowser.open(url)
+    try:
+        webbrowser.open(url)
+    except NameError:
+        print(f"\n⚠️  Could not open browser automatically. Open this URL manually:")
+        print(url)

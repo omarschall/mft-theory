@@ -2,6 +2,57 @@ Use core/ methods to simulate networks. Use LDR_dim/ methods to solve theory.
 
 Example_Theory_Fits.ipynb shows functions to call for sampling connectivity matrices, computing empirical autocovariance functions, and computing theoretical predictions.
 
+## Getting Started
+
+### Quick Setup (Conda - Recommended)
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repo-url>
+   cd mft-theory
+   ```
+
+2. **Create and activate conda environment:**
+   ```bash
+   conda env create -f environment.yml
+   conda activate mft-theory
+   ```
+
+3. **Start Jupyter Notebook:**
+   ```bash
+   jupyter notebook
+   ```
+
+4. **In a new notebook, use the template:**
+   ```python
+   from notebook_setup import setup_mft_theory
+   setup = setup_mft_theory(use_gpu=False)
+   # All modules are now imported and ready to use!
+   ```
+
+### Alternative Setup (pip)
+
+If you prefer pip or don't have conda:
+```bash
+pip install -r requirements.txt
+jupyter notebook
+```
+
+### Notebook Portability
+
+Notebooks using `notebook_setup.py` automatically work on:
+- ✅ Any local machine (macOS, Linux, Windows)
+- ✅ HPC clusters (auto-detects cluster paths)
+- ✅ Different Python environments
+
+The setup function:
+- Auto-detects the repository root path
+- Handles CPU/GPU device selection
+- Imports all necessary modules
+- Checks for missing dependencies with helpful error messages
+
+See `template_notebook.ipynb` for a complete example.
+
 ## Cluster Sync
 
 This repo includes tools to sync code to HPC clusters where Jupyter notebooks may reference the code.

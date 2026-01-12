@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from scipy.linalg import block_diag
-from LDR_dim.util import *
+from .util import *
 
 def update_extensive_tasks_2x2(d, C_rr, C, S, N_samples, dt, alpha, conj_Z=False):
     C_ft, S_ft = (uni_rfft(param, dt) for param in (C, S))

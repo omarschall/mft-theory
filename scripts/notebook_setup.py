@@ -127,7 +127,7 @@ def setup_mft_theory(use_gpu=False, import_cluster=True, import_empirics=True, c
     Args:
         use_gpu: Whether to use GPU (only works on cluster with CUDA)
         import_cluster: Whether to import cluster tools (optional, for local work)
-        import_empirics: Whether to import empirics and LDR_dim modules (optional)
+        import_empirics: Whether to import empirics modules (optional)
         check_deps: Whether to check for required dependencies (default: True)
     
     Returns:

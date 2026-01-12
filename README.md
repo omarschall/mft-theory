@@ -4,7 +4,7 @@ Mean field theory for neural networks.
 
 ## Quick Start
 
-Use `core/` methods to simulate networks. Use `LDR_dim/` methods to solve theory.
+Use `core/` methods to simulate networks. Use `theory/` methods to solve theory.
 
 `Example_Theory_Fits.ipynb` shows functions to call for sampling connectivity matrices, computing empirical autocovariance functions, and computing theoretical predictions.
 
@@ -31,9 +31,8 @@ Setup and utility scripts are in the [`scripts/`](scripts/) directory:
 ```
 mft-theory/
 ├── core/           # Core simulation methods
-├── theory/         # Theory modules
+├── theory/         # Theory modules (including low-dimensional theory)
 ├── training/       # Training utilities
-├── LDR_dim/        # Low-dimensional theory
 ├── plotting/       # Plotting utilities
 ├── utils/          # General utilities
 ├── cluster/         # Cluster management tools

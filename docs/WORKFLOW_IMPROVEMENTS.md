@@ -9,13 +9,13 @@ This document summarizes all workflow improvements made to make notebooks portab
 **Changes Made:**
 - ✅ Enhanced `notebook_setup.py` with dependency checking
 - ✅ Added helpful error messages for missing packages
-- ✅ Created `requirements.txt` for pip-based installations
+- ✅ Created `scripts/requirements.txt` for pip-based installations
 - ✅ Added comprehensive portability documentation (`NOTEBOOK_PORTABILITY.md`)
 - ✅ Updated `README.md` with quick start guide
 
 **Files Created/Modified:**
 - `notebook_setup.py` - Added dependency checking and better error messages
-- `requirements.txt` - New file for pip-based installs
+- `scripts/requirements.txt` - New file for pip-based installs
 - `NOTEBOOK_PORTABILITY.md` - New comprehensive portability guide
 - `README.md` - Updated with installation and quick start instructions
 
@@ -30,7 +30,7 @@ This document summarizes all workflow improvements made to make notebooks portab
 **Files Created/Modified:**
 - `notebook_setup.py` - Fixed import error
 - `~/.jupyter/jupyter_notebook_config.py` - Browser configuration
-- `environment.yml` - Notebook version constraint
+- `scripts/environment.yml` - Notebook version constraint
 - `JUPYTER_SETUP.md` - Jupyter setup guide
 
 ### 3. Cluster Sync Improvements ✅
@@ -60,13 +60,13 @@ This document summarizes all workflow improvements made to make notebooks portab
 ### 5. Environment Configuration ✅
 
 **Changes Made:**
-- ✅ Created `environment.yml` with all necessary dependencies
+- ✅ Created `scripts/environment.yml` with all necessary dependencies
 - ✅ CPU-only PyTorch for local development
 - ✅ Notebook <7.0 for better UI
 - ✅ All sync tools dependencies included
 
 **Files Created/Modified:**
-- `environment.yml` - Conda environment definition
+- `scripts/environment.yml` - Conda environment definition
 
 ## Testing Checklist
 
@@ -81,7 +81,7 @@ Before merging to main, verify:
 ### Dependency Checking
 - [ ] Test with missing packages (temporarily uninstall one) - should show helpful error
 - [ ] Test `check_dependencies()` function
-- [ ] Verify `requirements.txt` can be installed with pip
+- [ ] Verify `scripts/requirements.txt` can be installed with pip
 
 ### Jupyter Configuration
 - [ ] Verify Jupyter opens in Chrome (not Safari)
@@ -89,8 +89,8 @@ Before merging to main, verify:
 - [ ] Test that notebooks run without errors
 
 ### Cluster Sync
-- [ ] Test one-time sync: `python cluster_sync.py --cluster columbia`
-- [ ] Test auto-sync: `python cluster_sync.py --watch --cluster columbia` (run for a few seconds, make a file change, verify sync)
+- [ ] Test one-time sync: `python scripts/cluster_sync.py --cluster columbia`
+- [ ] Test auto-sync: `python scripts/cluster_sync.py --watch --cluster columbia` (run for a few seconds, make a file change, verify sync)
 - [ ] Verify files sync correctly to cluster
 - [ ] Test notebook version control: `python cluster/sync_notebooks_to_git.py sync`
 
@@ -103,7 +103,7 @@ Before merging to main, verify:
 ## Files Ready for Review
 
 ### New Files
-- `requirements.txt`
+- `scripts/requirements.txt`
 - `NOTEBOOK_PORTABILITY.md`
 - `WORKFLOW_IMPROVEMENTS.md` (this file)
 - `test_notebook_setup.py` (for testing)
@@ -112,7 +112,7 @@ Before merging to main, verify:
 - `notebook_setup.py` - Enhanced with dependency checking
 - `template_notebook.ipynb` - Simplified setup
 - `README.md` - Added installation instructions
-- `environment.yml` - Notebook version constraint
+- `scripts/environment.yml` - Notebook version constraint
 - `JUPYTER_SETUP.md` - Updated with Chrome configuration
 
 ### Config Files (Not in Repo)

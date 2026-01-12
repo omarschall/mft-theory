@@ -26,7 +26,7 @@ except ImportError:
         "PyTorch is not installed. Install with:\n"
         "  conda: conda install pytorch -c pytorch\n"
         "  pip: pip install torch\n"
-        "  Or see environment.yml for full environment setup."
+        "  Or see scripts/environment.yml for full environment setup."
     )
 
 try:
@@ -36,7 +36,7 @@ except ImportError:
         "NumPy is not installed. Install with:\n"
         "  conda: conda install numpy\n"
         "  pip: pip install numpy\n"
-        "  Or see environment.yml for full environment setup."
+        "  Or see scripts/environment.yml for full environment setup."
     )
 
 try:
@@ -46,7 +46,7 @@ except ImportError:
         "Matplotlib is not installed. Install with:\n"
         "  conda: conda install matplotlib\n"
         "  pip: pip install matplotlib\n"
-        "  Or see environment.yml for full environment setup."
+        "  Or see scripts/environment.yml for full environment setup."
     )
 
 from functools import partial
@@ -67,6 +67,7 @@ def find_repo_root():
     cluster_paths = [
         '/home/om2382/mft-theory/',
         '/scratch/oem214/mft-theory/',
+        '/share/lkumar/users/om2382/mft-theory/',
     ]
     for path in cluster_paths:
         if os.path.exists(path):
@@ -85,7 +86,13 @@ def _import_all_from_module(module_name, caller_globals):
         for name in public_names:
             caller_globals[name] = getattr(module, name)
         return True
-    except ImportError:
+    except ImportError as e:
+        # Print the actual error for debugging
+        print(f"   ImportError: {e}")
+        return False
+    except Exception as e:
+        # Catch other errors (syntax errors, missing deps, etc.)
+        print(f"   Error importing {module_name}: {type(e).__name__}: {e}")
         return False
 
 def check_dependencies():
@@ -105,7 +112,7 @@ def check_dependencies():
     
     if missing:
         print(f"⚠️  Missing packages: {', '.join(missing)}")
-        print("   Install with: conda env create -f environment.yml")
+        print("   Install with: conda env create -f scripts/environment.yml")
         print("   Or see README.md for installation instructions")
         return False
     return True
@@ -149,6 +156,15 @@ def setup_mft_theory(use_gpu=False, import_cluster=True, import_empirics=True, c
     
     print(f"📂 Using repo at: {repo_root}")
     
+    # Debug: verify repo structure
+    import os
+    core_path = os.path.join(repo_root, 'core')
+    theory_path = os.path.join(repo_root, 'theory')
+    if not os.path.exists(core_path):
+        print(f"⚠️  Warning: core directory not found at {core_path}")
+    if not os.path.exists(theory_path):
+        print(f"⚠️  Warning: theory directory not found at {theory_path}")
+    
     # Set up device
     if use_gpu and torch.cuda.is_available():
         device = torch.device('cuda')
@@ -163,12 +179,21 @@ def setup_mft_theory(use_gpu=False, import_cluster=True, import_empirics=True, c
             print(f"💻 Using CPU (set use_gpu=True for GPU on cluster)")
     
     # Import standard modules into notebook's global namespace
-    modules_to_import = ['functions', 'core', 'ode_methods', 'theory', 'utils', 'plotting']
-    for module_name in modules_to_import:
+    # Required modules (should exist)
+    required_modules = ['core', 'theory', 'utils', 'plotting']
+    # Optional/legacy modules (may not exist after reorganization)
+    optional_modules = ['functions', 'ode_methods']
+    
+    for module_name in required_modules:
         if _import_all_from_module(module_name, notebook_globals):
             pass  # Success
         else:
             print(f"⚠️  Warning: Could not import {module_name}")
+    
+    # Try optional modules silently (no warnings if missing)
+    #for module_name in optional_modules:
+    #    _import_all_from_module(module_name, notebook_globals)
+    
     print("✅ Core modules imported")
     
     # Optional imports
@@ -177,12 +202,7 @@ def setup_mft_theory(use_gpu=False, import_cluster=True, import_empirics=True, c
             print("✅ Cluster tools available")
         else:
             print("ℹ️  Cluster tools not available (this is fine for local work)")
-    
-    if import_empirics:
-        if _import_all_from_module('empirics', notebook_globals):
-            pass
-        if _import_all_from_module('LDR_dim', notebook_globals):
-            print("✅ Empirics and LDR_dim modules imported")
+
     
     # Helper function for device-aware tensors
     def to_torch(x, dtype=torch.float32):

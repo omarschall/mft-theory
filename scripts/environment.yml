@@ -24,7 +24,7 @@ dependencies:
 # - This can take 5-10 minutes to solve dependencies (normal for conda)
 # - If it's taking too long, you can try mamba (faster solver):
 #     conda install mamba -n base -c conda-forge
-#     mamba env create -f environment.yml
+#     mamba env create -f scripts/environment.yml
 # - Running from any conda environment is fine - it creates a new isolated env
 #
 # After installation, use classic notebook (matches cluster UI):
@@ -33,13 +33,13 @@ dependencies:
 # (Using notebook <7.0 to match cluster's better-looking UI - 7.0+ has a worse interface)
 
 # To create this environment:
-#   conda env create -f environment.yml
+#   conda env create -f scripts/environment.yml
 #
 # To activate:
 #   conda activate mft-theory
 #
 # To update:
-#   conda env update -f environment.yml --prune
+#   conda env update -f scripts/environment.yml --prune
 #
 # Note: This environment uses CPU-only PyTorch by default.
 #       For GPU support on cluster, use the cluster's environment.

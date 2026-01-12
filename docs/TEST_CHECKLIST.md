@@ -96,9 +96,9 @@ Run the example code cells (theory computation and simulation):
 # Create a test virtual environment
 python -m venv test_env
 source test_env/bin/activate  # On macOS/Linux
-pip install -r requirements.txt
+pip install -r scripts/requirements.txt
 ```
-- [ ] `requirements.txt` exists and is readable
+- [ ] `scripts/requirements.txt` exists and is readable
 - [ ] Pip install completes without critical errors
 - [ ] Can import: `python -c "import torch, numpy, matplotlib; print('OK')"`
 
@@ -110,7 +110,7 @@ pip install -r requirements.txt
 
 ### 4.1 One-Time Sync
 ```bash
-python cluster_sync.py --cluster columbia
+python scripts/cluster_sync.py --cluster columbia
 ```
 - [ ] Command runs without errors
 - [ ] Shows sync progress/output
@@ -119,7 +119,7 @@ python cluster_sync.py --cluster columbia
 ### 4.2 Auto-Sync Watcher (Quick Test)
 ```bash
 # In one terminal, start watcher:
-python cluster_sync.py --watch --cluster columbia --debounce 2
+python scripts/cluster_sync.py --watch --cluster columbia --debounce 2
 
 # In another terminal, make a test change:
 touch test_sync_file.py
@@ -164,7 +164,7 @@ echo "# test" >> test_sync_file.py
 ```
 - [ ] Error messages are clear and helpful
 - [ ] Suggest installation commands
-- [ ] Point to `environment.yml`
+- [ ] Point to `scripts/environment.yml`
 
 **Note:** This is optional - mainly verify error messages in code look good.
 

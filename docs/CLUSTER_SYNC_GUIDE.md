@@ -12,7 +12,7 @@
 - **Debouncing**: Waits 2 seconds after last change before syncing (configurable)
 - **Smart filtering**: Only syncs code files, skips temp files
 
-### 3. CLI Tool (`cluster_sync.py`)
+### 3. CLI Tool (`scripts/cluster_sync.py`)
 - Simple command-line interface for syncing
 - Can do one-time sync or start the watcher
 
@@ -25,13 +25,13 @@
 
 ### One-Time Sync
 ```bash
-python cluster_sync.py --cluster columbia
+python scripts/cluster_sync.py --cluster columbia
 ```
 
 ### Auto-Sync (Recommended)
 ```bash
 # Start watcher (runs until Ctrl+C)
-python cluster_sync.py --watch --cluster columbia
+python scripts/cluster_sync.py --watch --cluster columbia
 ```
 
 ### Access Cluster Notebooks (Optional)
@@ -83,7 +83,7 @@ pip install watchdog
 **Note on Conda Environment**: If you need a specific conda environment (e.g., `restored_env_2`) to run these scripts, activate it first:
 ```bash
 conda activate restored_env_2
-python cluster_sync.py --cluster columbia
+python scripts/cluster_sync.py --cluster columbia
 ```
 
 ## What's Safe
@@ -108,6 +108,6 @@ python cluster_sync.py --cluster columbia
 
 ## Next Steps
 
-1. **Test the sync tools** - Try `python cluster_sync.py --watch` (in your conda env if needed)
+1. **Test the sync tools** - Try `python scripts/cluster_sync.py --watch` (in your conda env if needed)
 2. **If everything works** - Merge the branch or commit
 3. **If something breaks** - Just `git checkout main`

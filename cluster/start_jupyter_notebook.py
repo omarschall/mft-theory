@@ -105,21 +105,14 @@ def start_axon_jupyter_notebook(project_name='low-rank-dims',
     sync_columbia_cluster()
     notebook_dir = os.path.join('/home/om2382', project_name, 'notebooks')
     remote = 'om2382@axon.rc.zi.columbia.edu'
-    sp = subprocess.run(['ssh', remote,
-                         'ml load anaconda3-2023.07',
-                         '&&',
-                         'conda activate {}'.format(env_name),
-                         '&&',
-                         'cd {}'.format(notebook_dir),
-                         '&&',
-                         'export SJUPYTER_TIMEOUT=0',
-                         '&&',
-                         'sjupyter',
-                         #'-A lkumar -p lkumar',
-                         '--time={}:00:00'.format(time_in_hours),
-                         '--priority=4294967290',
-                         '--mem={}GB'.format(mem_in_gb),
-                         '--gres=gpu:{}'.format(n_gpus)], capture_output=True)
+    # Build the command as a single string for SSH
+    command = ('ml load anaconda3-2023.07 && '
+               'conda activate {} && '
+               'cd {} && '
+               'export SJUPYTER_TIMEOUT=0 && '
+               'sjupyter --time={}:00:00 --priority=4294967290 --mem={}GB --gres=gpu:{}'.format(
+                   env_name, notebook_dir, time_in_hours, mem_in_gb, n_gpus))
+    sp = subprocess.run(['ssh', remote, command], capture_output=True)
     print(sp.stdout)
     address = str(sp.stdout).split('http://')[1].split('/?token=')
     ip, port = address[0].split(':')

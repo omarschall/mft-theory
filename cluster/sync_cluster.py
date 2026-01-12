@@ -38,7 +38,10 @@ def sync_cluster(local_module_path=None,
     if verbose:
         print(f"Syncing {local_module_path} to {remote_path}")
     
-    result = subprocess.run(['rsync', '-aav',
+    # Use --checksum to force comparison by content, not just timestamp
+    # This ensures file content changes (like deleted lines) are synced
+    # --inplace forces in-place updates which ensures files are overwritten
+    result = subprocess.run(['rsync', '-av', '--delete', '--checksum', '--inplace',
                     '--exclude', '.git',
                     '--exclude', 'files',
                     '--exclude', '__pycache__',
@@ -59,6 +62,7 @@ def sync_cluster(local_module_path=None,
 def sync_columbia_cluster(local_module_path=None,
                           module_name='mft-theory',
                           username='om2382', domain='axon.rc.zi.columbia.edu',
+                          remote_base_path=None,
                           verbose=True):
     """Sync local code with module path on cluster.
     
@@ -67,6 +71,7 @@ def sync_columbia_cluster(local_module_path=None,
         module_name: Name of module directory on cluster
         username: Cluster username
         domain: Cluster domain
+        remote_base_path: Base path on cluster (default: tries /share/lkumar/users/{username}/ then /home/{username}/)
         verbose: Print sync status
     """
 
@@ -76,14 +81,32 @@ def sync_columbia_cluster(local_module_path=None,
     if not local_module_path.endswith('/'):
         local_module_path += '/'
 
-    scratch_path = '/home/{}/'.format(username)
-    module_path = os.path.join(scratch_path, module_name)
+
+    # Try /share/lkumar/users/ first (where notebooks are actually looking), then fall back to /home/
+    if remote_base_path is None:
+        # Check if /share/lkumar/users/ path exists
+        test_path = '/share/lkumar/users/{}/{}'.format(username, module_name)
+        test_result = subprocess.run(
+            ['ssh', '{}@{}'.format(username, domain), f'test -d {test_path}'],
+            capture_output=True
+        )
+        if test_result.returncode == 0:
+            remote_base_path = '/share/lkumar/users/{}/'.format(username)
+        else:
+            remote_base_path = '/home/{}/'.format(username)
+    
+    module_path = os.path.join(remote_base_path, module_name)
     remote_path = '{}@{}:{}'.format(username, domain, module_path)
     
+    print(f"Local module path: {local_module_path}")
+
     if verbose:
         print(f"Syncing {local_module_path} to {remote_path}")
     
-    result = subprocess.run(['rsync', '-aav',
+    # Use --checksum to force comparison by content, not just timestamp
+    # This ensures file content changes (like deleted lines) are synced
+    # --inplace forces in-place updates which ensures files are overwritten
+    result = subprocess.run(['rsync', '-av', '--delete', '--checksum', '--inplace',
                     '--exclude', '.git',
                     '--exclude', 'files',
                     '--exclude', '__pycache__',

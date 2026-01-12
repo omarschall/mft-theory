@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from empirics import random_derangement
 from .Update_Step import update_step
 
 phi_torch = lambda x: torch.erf((np.sqrt(np.pi)/2)*x)
@@ -120,4 +119,15 @@ def compute_lagged_xcov(r1, r2, lags, dt_save, outer=False):
             xcov[i_lag] = torch.einsum('tbi, tbj -> bij', r1_lag, r2_lag)/(r1_lag.shape[0] - 1)
     return xcov
 
-
+def random_derangement(n):
+    while True:
+        v = [i for i in range(n)]
+        for j in range(n - 1, -1, -1):
+            p = np.random.randint(j+1)
+            if v[p] == j:
+                break
+            else:
+                v[j], v[p] = v[p], v[j]
+        else:
+            if v[0] != 0:
+                return tuple(v)

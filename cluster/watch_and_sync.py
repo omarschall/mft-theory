@@ -146,7 +146,7 @@ def watch_and_sync(cluster='columbia', debounce_seconds=2, watch_path=None, verb
             "  pip install watchdog\n"
             "\n"
             "Or use one-time sync instead:\n"
-            "  python cluster_sync.py --cluster columbia"
+            "  python scripts/cluster_sync.py --cluster columbia"
         )
     if watch_path is None:
         # Auto-detect repo root

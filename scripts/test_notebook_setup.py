@@ -6,9 +6,11 @@ Simulates notebook behavior to verify setup works correctly.
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(__file__))
+# Add repo root to path so we can import from scripts
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, repo_root)
 
-from notebook_setup import check_dependencies, find_repo_root, setup_mft_theory
+from scripts.notebook_setup import check_dependencies, find_repo_root, setup_mft_theory
 
 # Test 1: Check dependencies
 print("=" * 60)
@@ -37,7 +39,7 @@ print("=" * 60)
 # Simulate notebook globals
 notebook_globals = {}
 exec("""
-from notebook_setup import setup_mft_theory
+from scripts.notebook_setup import setup_mft_theory
 setup = setup_mft_theory(use_gpu=False, import_cluster=False, import_empirics=False, check_deps=False)
 print(f"Device: {setup['device']}")
 print(f"Device idx: {setup['device_idx']}")

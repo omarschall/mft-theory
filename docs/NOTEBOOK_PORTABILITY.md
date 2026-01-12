@@ -41,7 +41,7 @@ The setup function checks for required packages and provides helpful error messa
 
 ```
 ⚠️  Missing packages: PyTorch
-   Install with: conda env create -f environment.yml
+   Install with: conda env create -f scripts/environment.yml
    Or see README.md for installation instructions
 ```
 
@@ -58,14 +58,14 @@ All standard modules are imported into the notebook's namespace:
 ### Option 1: Conda (Recommended)
 
 ```bash
-conda env create -f environment.yml
+conda env create -f scripts/environment.yml
 conda activate mft-theory
 ```
 
 ### Option 2: pip
 
 ```bash
-pip install -r requirements.txt
+pip install -r scripts/requirements.txt
 ```
 
 ### Minimum Requirements
@@ -174,5 +174,5 @@ Before sharing a notebook, ensure:
 - ✅ No hardcoded file paths (use `repo_root` or relative paths)
 - ✅ Uses `device` variable for device selection
 - ✅ Uses `to_torch()` helper for tensor creation
-- ✅ All dependencies are listed in `environment.yml` or `requirements.txt`
+- ✅ All dependencies are listed in `scripts/environment.yml` or `scripts/requirements.txt`
 - ✅ Works with both CPU and GPU (if applicable)

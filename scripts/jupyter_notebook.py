@@ -1,3 +1,10 @@
+import sys
+import os
+# Add repo root to path so we can import cluster module
+repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
+
 from cluster import start_jupyter_notebook, close_jupyter_notebook, start_axon_jupyter_notebook
 import argparse
 

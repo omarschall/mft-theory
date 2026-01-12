@@ -2,10 +2,10 @@
 # Python package dependencies for mft-theory notebooks
 # 
 # For pip-based installation (alternative to conda):
-#   pip install -r requirements.txt
+#   pip install -r scripts/requirements.txt
 #
 # For conda-based installation (recommended):
-#   conda env create -f environment.yml
+#   conda env create -f scripts/environment.yml
 
 # Core scientific computing
 numpy>=1.20.0
@@ -27,4 +27,4 @@ jupyterlab>=4.0.0  # Optional, for JupyterLab interface
 watchdog>=2.0.0  # For cluster sync tools (optional for notebook use)
 
 # Note: Python 3.10+ recommended
-# For full environment including exact versions, use environment.yml
+# For full environment including exact versions, use scripts/environment.yml
